@@ -11,6 +11,9 @@ namespace Album;
 
 use Zend\Mvc\ModuleRouteListener;
 use Zend\Mvc\MvcEvent;
+use Zend\Db\ResultSet\ResultSet;
+use Zend\Db\TableGateway\TableGateway;
+
 
 class Module
 {
@@ -36,4 +39,24 @@ class Module
             ),
         );
     }
+
+		public function getServiceConfig()
+     {
+         return array(
+             'factories' => array(
+                 'Album\Model\DbTable\Album' =>  function($sm) {
+                     $tableGateway = $sm->get('AlbumGateway');
+                     $table = new \Album\Model\DbTable\Album($tableGateway);
+                     return $table;
+                 },
+                 'AlbumGateway' => function ($sm) {
+                     $dbAdapter = $sm->get('Zend\Db\Adapter\Adapter');
+                     $resultSetPrototype = new ResultSet();
+                     $resultSetPrototype->setArrayObjectPrototype(new \Album\Model\Album());
+                     return new TableGateway('album', $dbAdapter, null, $resultSetPrototype);
+                 },
+             ),
+         );
+     }
+
 }
